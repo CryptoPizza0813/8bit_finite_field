@@ -8,6 +8,8 @@ BYTE field_division(BYTE A, BYTE B);        // return A / B
 BYTE field_inverse(BYTE h);                 // return A^{-1} in GF(2^8)
 int find_deg(BYTE A);
 
+BYTE polynomial_multiplication(BYTE A, BYTE B);
+
 int main()
 {
     /* 
@@ -50,6 +52,22 @@ BYTE field_multiplication(BYTE A, BYTE B)
     return temp;
 }
 
+BYTE polynomial_multiplication(BYTE A, BYTE B)
+{
+    int i;
+    BYTE temp = 0, mask = 0x01;
+
+    for(int i = 0; i < 8; i++) {
+        if(B & mask)
+            temp ^= A;
+ 
+        A <<= 1;
+        mask <<= 1;   
+    }
+
+    return temp;
+}
+
 // return (A // B)
 BYTE field_division(BYTE A, BYTE B) 
 {
@@ -84,10 +102,6 @@ BYTE field_inverse(BYTE h)  // A = g(x)
     g ^= (h << (8-deg_h));
     BYTE init_quotient = (0x01 << (8-deg_h)), quotient;
 
-    // printf("%02x \t %02x\n", g, init_quotient);
-
-
-
     BYTE t2 = 0, t1 = 1, r, t, temp;
     int flag = 0;
 
@@ -106,12 +120,12 @@ BYTE field_inverse(BYTE h)  // A = g(x)
 
 
         // r = g - h * q
-        temp = field_multiplication(h, quotient);
+        temp = polynomial_multiplication(h, quotient);
         r = field_addition(g, temp);
 
 
         // t <- t2 - q * t1
-        temp = field_multiplication(quotient, t1);
+        temp = polynomial_multiplication(quotient, t1);
         t = field_addition(t2, temp);
 
         // g <- h, h <- r
